@@ -7,7 +7,8 @@ import { createClient } from '@supabase/supabase-js'
 const {
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
-  CLIENT_ORIGIN = 'http://localhost:5173',
+  FRONTEND_URL = 'http://localhost:5173',
+  PROXY_SECRET,
   ADMIN_KEY,
   PORT = 4000,
 } = process.env
@@ -23,16 +24,27 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const app = express()
 app.set('trust proxy', 1) // Render sits behind a proxy; needed for per-IP rate limits
-app.use(cors({ origin: CLIENT_ORIGIN.split(',').map((o) => o.trim()) }))
+app.use(cors({ origin: FRONTEND_URL.split(',').map((o) => o.trim()) }))
 app.use(express.json({ limit: '10kb' }))
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
+
+// In production, only accept /api calls that came through the Cloudflare proxy.
+const viaProxy = (req) => Boolean(PROXY_SECRET) && req.get('x-proxy-secret') === PROXY_SECRET
+app.use('/api', (req, res, next) => {
+  if (PROXY_SECRET && !viaProxy(req)) return res.status(403).json({ error: 'Forbidden' })
+  next()
+})
+
+// Real visitor IP: from the proxy header when trusted, otherwise the socket IP.
+const clientIp = (req) => (viaProxy(req) && req.get('x-client-ip')) || req.ip
 
 const interestLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  keyGenerator: clientIp,
   message: { error: 'Too many requests from this network. Try again in 15 minutes.' },
 })
 

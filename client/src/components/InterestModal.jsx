@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-const API = (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '')
+// Same-origin call. Vite (local) or the Cloudflare Function (production) forwards it to Express.
 const EMPTY = { name: '', email: '', company: '', website: '' }
 
 export default function InterestModal({ open, onClose }) {
@@ -49,7 +49,7 @@ export default function InterestModal({ open, onClose }) {
     setStatus('sending')
     setMessage('')
     try {
-      const res = await fetch(`${API}/api/interest`, {
+      const res = await fetch('/api/interest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
