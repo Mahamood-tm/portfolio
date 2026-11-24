@@ -1,11 +1,12 @@
 import Icon from './Icon.jsx'
 
-// A ring of glass cards slowly orbiting a code window, all in 3D CSS.
-export default function HeroVisual({ cards }) {
+// A ring of glass cards slowly orbiting the centre piece, all in 3D CSS.
+// Pass `portrait` (an image path) to show a photo; leave it out to show the code window.
+export default function HeroVisual({ cards, portrait }) {
   const step = 360 / cards.length
   return (
     <div className="hv" aria-hidden="true">
-      <div className="hv-scene">
+      <div className={`hv-scene${portrait ? ' is-portrait' : ''}`}>
         <div className="hv-tilt">
           <div className="hv-ring">
             {cards.map((c, i) => (
@@ -29,6 +30,11 @@ export default function HeroVisual({ cards }) {
           </div>
         </div>
 
+        {portrait ? (
+          <div className="hv-portrait">
+            <img src={portrait} alt="" width="720" height="900" />
+          </div>
+        ) : (
         <div className="hv-code">
           <div className="hv-bar">
             <i />
@@ -57,6 +63,7 @@ export default function HeroVisual({ cards }) {
             </code>
           </pre>
         </div>
+        )}
       </div>
     </div>
   )

@@ -162,7 +162,7 @@ export default function App() {
             </div>
 
             <div className="load" style={{ '--d': 4 }}>
-              <HeroVisual cards={ring} />
+              <HeroVisual cards={ring} portrait="/portrait.webp" />
             </div>
 
             <div className="corner corner-left load" style={{ '--d': 7 }}>
